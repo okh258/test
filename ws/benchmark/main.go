@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"test/ws"
+	"test/model"
 	"time"
 
 	"nhooyr.io/websocket"
@@ -21,7 +21,7 @@ var (
 )
 
 func init() {
-	flag.IntVar(&userNum, "u", 100000, "登录用户数")
+	flag.IntVar(&userNum, "u", 10, "登录用户数")
 	flag.DurationVar(&loginInterval, "l", 100*time.Millisecond, "用户陆续登录时间间隔")
 	flag.DurationVar(&msgInterval, "m", 10*time.Second, "用户发送消息时间间隔")
 }
@@ -55,11 +55,11 @@ func UserConnect(uid string) {
 	ctx = context.Background()
 
 	for {
-		var message ws.Message
+		var message *model.Message
 		err = wsjson.Read(ctx, conn, &message)
 		if err != nil {
 			log.Println("receive msg error:", err)
-			continue
+			return
 		}
 
 		//if message.ClientSendTime.IsZero() {
