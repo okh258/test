@@ -1,4 +1,4 @@
-package ws
+package main
 
 import (
 	"context"
@@ -7,17 +7,16 @@ import (
 	"net/http"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
-	"testing"
 )
 
 var (
 	addr = ":2022"
 )
 
-func TestWsServer(t *testing.T) {
+func main() {
 	RegisterHandle()
 
-	t.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
 func RegisterHandle() {
