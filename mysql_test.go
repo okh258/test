@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"os"
 	"test/util"
 	"testing"
 
@@ -10,9 +11,8 @@ import (
 )
 
 func InitMysql(t *testing.T) {
-	//uri := "im:BT0tjP7fMWI5DW9A@tcp(172.31.15.17:3306)/tm_dating"
-	uri := "im:BT0tjP7fMWI5DW9A@tcp(172.31.15.17:3306)/tm_admin"
-	err := hfmysql.Init(10, 5, uri)
+	uri := os.Getenv("mysql_uri")
+	err := hfmysql.Init(10, 5, uri+"/tm_dating")
 	if err != nil {
 		t.Fatalf("connect mysql failed, err: %v", err)
 	}

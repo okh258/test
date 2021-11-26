@@ -3,8 +3,7 @@ package ws
 import (
 	"context"
 	"errors"
-	"fmt"
-	"git.devops.com/wsim/hflib/logs"
+	"log"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
 	"test/util"
@@ -28,9 +27,9 @@ func (u *User) SendMessage(ctx context.Context) {
 	for msg := range u.MessageChannel {
 		err := wsjson.Write(ctx, u.conn, msg)
 		if err != nil {
-			logs.Errorf(ctx, "send msg failed, uid: %v, msg: %+v", u.UID, msg)
+			log.Printf("send msg failed, uid: %v, msg: %+v\n", u.UID, msg)
 		} else {
-			fmt.Printf("%v send msg: %+v\n", u.UID, msg)
+			log.Printf("%v send msg: %+v\n", u.UID, msg)
 		}
 	}
 }
@@ -51,7 +50,7 @@ func (u *User) ReceiveMessage(ctx context.Context) error {
 
 			return err
 		}
-		fmt.Printf("%v receive msg: %+v\n", u.UID, receiveMsg)
+		log.Printf("%v receive msg: %+v\n", u.UID, receiveMsg)
 		//Broadcaster.Broadcast(&Message{
 		//	Content: receiveMsg["content"],
 		//	MsgTime: util.MicroTime(),

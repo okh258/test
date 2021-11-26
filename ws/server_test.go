@@ -3,7 +3,7 @@ package ws
 import (
 	"context"
 	"fmt"
-	"git.devops.com/wsim/hflib/logs"
+	"log"
 	"net/http"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
@@ -31,19 +31,19 @@ func RegisterHandle() {
 func WebSocketHandleFunc(w http.ResponseWriter, req *http.Request) {
 	conn, err := websocket.Accept(w, req, nil)
 	if err != nil {
-		logs.Errorf(req.Context(), "websocket accept failed, err: %v", err)
+		log.Printf("websocket accept failed, err: %v\n", err)
 		return
 	}
 
 	// 1. uid 是否合法
 	uid := req.FormValue("uid")
 	if l := len(uid); l < 4 || l > 64 {
-		logs.Infof(req.Context(), "uid illegal, uid: %v", uid)
+		log.Printf("uid illegal, uid: %v\n", uid)
 		wsjson.Write(req.Context(), conn, fmt.Sprintf("uid illegal, uid: %v", uid))
 		conn.Close(websocket.StatusUnsupportedData, fmt.Sprintf("uid illegal, uid: %v", uid))
 		return
 	}
-	logs.Infof(req.Context(), "uid len: %v", len(uid))
+	log.Printf("uid len: %v\n", len(uid))
 	// 2. 校验用户权限
 	if !UserAuth(uid) {
 		conn.Close(websocket.StatusUnsupportedData, fmt.Sprintf("uid illegal, uid: %v", uid))
@@ -73,7 +73,7 @@ func AcceptUser(conn *websocket.Conn, uid string, req *http.Request) {
 
 	// 4. 将该用户加入广播器的用户中
 	Broadcaster.UserEntering(user)
-	logs.Infof(req.Context(), "user online, uid: %v", uid)
+	log.Printf("user online, uid: %v\n", uid)
 	// 5. 用户后续处理
 	go UserHandle(user, conn, uid)
 }
@@ -85,18 +85,18 @@ func UserHandle(user *User, conn *websocket.Conn, uid string) {
 
 	// 2. 用户离开
 	Broadcaster.UserLeaving(user)
-	logs.Infof(ctx, "user offline, uid: %v", uid)
+	log.Printf("user offline, uid: %v\n", uid)
 
 	if err == nil {
 		closeErr := conn.Close(websocket.StatusNormalClosure, "err is empty")
 		if closeErr != nil {
-			logs.Errorf(ctx, "conn close failed, err: %v", closeErr)
+			log.Printf("conn close failed, err: %v\n", closeErr)
 		}
 	} else {
-		logs.Errorf(ctx, "read error from client, err: %v", err)
+		log.Printf("read error from client, err: %v\n", err)
 		closeErr := conn.Close(websocket.StatusInternalError, fmt.Sprintf("read error from client, err: %v", err))
 		if closeErr != nil {
-			logs.Errorf(ctx, "conn close failed, err: %v", closeErr)
+			log.Printf("conn close failed, err: %v\n", closeErr)
 		}
 	}
 }
