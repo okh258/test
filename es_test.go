@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/olivere/elastic/v7"
+	"test/models"
 	"test/util"
 	"testing"
 )
@@ -55,7 +56,7 @@ func GetLockOrderNum(t *testing.T, ctx context.Context, uid int64, now int64) in
 	return int(*agg.Value)
 }
 
-func TestGetMomentCount(t *testing.T) {
+func TestGetCensorMsgCount(t *testing.T) {
 	ctx := context.Background()
 	//num1 := GetCensorMomentCount(t, ctx, 0, util.MicroTime())
 	//num2 := GetCensorCommentCount(t, ctx, 0, util.MicroTime())
@@ -164,4 +165,54 @@ func GetCensorMsgCount(t *testing.T, ctx context.Context, start, end int64) int 
 		return 0
 	}
 	return int(*agg.Value)
+}
+
+func TestGetUserCount(t *testing.T) {
+	//d, _ := time.Parse("2006-01-02", "2021-10-23")
+	//d, _ := time.Parse("2006-01-02", "2021-12-06")
+	total := GetUserCount(models.SearchUserRequestParams{
+		Gender:  0,
+		IsCoach: 0,
+		//StartTime: d.UnixNano() / 1000000,
+		//StartTime: util.GetZero(time.Now()).UnixNano() / 1000000,
+		StartTime: 0,
+		EndTime:   util.Timestamp(),
+	})
+	t.Logf("total: %v", total)
+}
+
+func GetUserCount(params models.SearchUserRequestParams) int64 {
+	elasticClient, err := elastic.NewClient(elastic.SetURL("http://172.31.15.17:9200/"), elastic.SetSniff(false))
+	if err != nil {
+		panic(err)
+	}
+
+	indexName := "uat_tm_user"
+	query := elastic.NewBoolQuery()
+	if params.Gender > 0 {
+		query.Must(elastic.NewTermQuery("gender", params.Gender))
+	}
+	if params.IsCoach != 0 {
+		if params.IsCoach == -1 {
+			query.Must(elastic.NewTermQuery("user_identity", 0))
+		} else {
+			query.Must(elastic.NewTermQuery("user_identity", 1))
+		}
+	}
+	if params.EndTime != 0 && params.StartTime == 0 {
+		query.Must(elastic.NewRangeQuery("register_time").Lte(params.EndTime))
+	} else if params.EndTime != 0 && params.StartTime != 0 {
+		query.Must(elastic.NewRangeQuery("register_time").Gte(params.StartTime).Lte(params.EndTime))
+	}
+
+	resp, err := elasticClient.Search().Index(indexName).
+		Query(query).
+		Sort("register_time", false).
+		Size(0).
+		Do(context.TODO())
+	if err != nil {
+		return 0
+	}
+
+	return resp.TotalHits()
 }

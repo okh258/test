@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"test/model"
+	"test/models"
 	"time"
 
 	"nhooyr.io/websocket"
@@ -55,7 +55,7 @@ func UserConnect(uid string) {
 	ctx = context.Background()
 
 	for {
-		var message model.Message
+		var message models.Message
 		err = wsjson.Read(ctx, conn, &message)
 		if err != nil {
 			log.Println("receive msg error:", err)

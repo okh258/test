@@ -12,6 +12,15 @@ func TestEqual(t *testing.T) {
 	t.Logf("\nold dynamic: %+v, \nnew dynamic: %+v", d, b)
 	if reflect.DeepEqual(d, b) {
 		t.Log("结构体值相等")
+		goto a1
+	}
+	t.Log("结构体值不相等")
+
+a1:
+	x := *d
+	x.LockOrderNum = 2
+	if reflect.DeepEqual(x, d) {
+		t.Log("结构体值相等")
 		return
 	}
 	t.Log("结构体值不相等")

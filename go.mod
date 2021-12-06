@@ -7,6 +7,7 @@ require (
 	git.devops.com/wsim/hflib v0.0.0-20201229135334-0999e053d439
 	github.com/ClickHouse/clickhouse-go v1.5.1
 	github.com/astaxie/beego v1.12.3
+	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gorilla/websocket v1.4.1
 	github.com/olivere/elastic/v7 v7.0.29
 	github.com/stretchr/testify v1.7.0

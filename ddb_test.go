@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"git.devops.com/wsim/hflib/logs"
 	"test/util"
 	"testing"
 
@@ -54,5 +55,28 @@ func GetCensorVideoCount(t *testing.T, ctx context.Context, status, start, end i
 		return 0, err
 	}
 	t.Logf("count: %v, hasMore: %v", count, hasMore)
+	return count, nil
+}
+
+func TestGetMomentCount(t *testing.T) {
+	InitDDB(t)
+	count, err := GetMomentCount(0, 0, util.MicroTime())
+	if err != nil {
+		t.Logf("GetSkillCertCount failed, err: %v", err)
+		return
+	}
+	t.Logf("count: %v", count)
+}
+
+func GetMomentCount(status, start, end int64) (int64, error) {
+	count, _, err := dao.DB().Query(context.TODO()).Table("moment_info").
+		Index("ctime-idx").
+		HashKey("status").Hash(status).
+		RangeKey("ctime").Between(start, end).
+		Count()
+	if err != nil {
+		logs.Errorf(context.TODO(), "GetMomentCount: %v", err.Error())
+		return 0, err
+	}
 	return count, nil
 }

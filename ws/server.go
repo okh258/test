@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
-	"test/model"
+	"test/models"
 )
 
 var (
@@ -63,7 +63,7 @@ func UserAuth(uid string) bool {
 // 接收用户
 func AcceptUser(conn *websocket.Conn, uid string, req *http.Request) {
 	// 1. 创建用户
-	user := model.NewUser(conn, uid, req.RemoteAddr, 10)
+	user := models.NewUser(conn, uid, req.RemoteAddr, 10)
 
 	// 2. 开启给用户发送消息的协程
 	go user.SendMessage(context.TODO())
@@ -78,7 +78,7 @@ func AcceptUser(conn *websocket.Conn, uid string, req *http.Request) {
 	go UserHandle(user, conn, uid)
 }
 
-func UserHandle(user *model.User, conn *websocket.Conn, uid string) {
+func UserHandle(user *models.User, conn *websocket.Conn, uid string) {
 	ctx := context.TODO()
 	// 1. 接收用户消息
 	err := user.ReceiveMessage(ctx)

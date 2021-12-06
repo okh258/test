@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"test/model"
+	"test/models"
 )
 
 var MessageQueueLen = 1024
@@ -10,27 +10,27 @@ var MessageQueueLen = 1024
 // broadcaster 广播器
 type broadcaster struct {
 	// 所有在线用户
-	users map[string]*model.User
+	users map[string]*models.User
 
 	// 所有 channel 统一管理，可以避免外部乱用
-	enteringChannel chan *model.User
-	leavingChannel  chan *model.User
-	messageChannel  chan *model.Message
+	enteringChannel chan *models.User
+	leavingChannel  chan *models.User
+	messageChannel  chan *models.Message
 
 	// 获取用户列表
 	requestUsersChannel chan struct{}
-	usersChannel        chan []*model.User
+	usersChannel        chan []*models.User
 }
 
 var Broadcaster = &broadcaster{
-	users: make(map[string]*model.User),
+	users: make(map[string]*models.User),
 
-	enteringChannel: make(chan *model.User),
-	leavingChannel:  make(chan *model.User),
-	messageChannel:  make(chan *model.Message, MessageQueueLen),
+	enteringChannel: make(chan *models.User),
+	leavingChannel:  make(chan *models.User),
+	messageChannel:  make(chan *models.Message, MessageQueueLen),
 
 	requestUsersChannel: make(chan struct{}),
-	usersChannel:        make(chan []*model.User),
+	usersChannel:        make(chan []*models.User),
 }
 
 // Start 启动广播器
@@ -53,7 +53,7 @@ func (b *broadcaster) Start() {
 				user.MessageChannel <- msg
 			}
 		case <-b.requestUsersChannel:
-			userList := make([]*model.User, 0, len(b.users))
+			userList := make([]*models.User, 0, len(b.users))
 			for _, user := range b.users {
 				userList = append(userList, user)
 			}
@@ -63,22 +63,22 @@ func (b *broadcaster) Start() {
 	}
 }
 
-func (b *broadcaster) UserEntering(u *model.User) {
+func (b *broadcaster) UserEntering(u *models.User) {
 	b.enteringChannel <- u
 }
 
-func (b *broadcaster) UserLeaving(u *model.User) {
+func (b *broadcaster) UserLeaving(u *models.User) {
 	b.leavingChannel <- u
 }
 
-func (b *broadcaster) Broadcast(msg *model.Message) {
+func (b *broadcaster) Broadcast(msg *models.Message) {
 	if len(b.messageChannel) >= MessageQueueLen {
 		log.Println("broadcast queue is full...")
 	}
 	b.messageChannel <- msg
 }
 
-func (b *broadcaster) GetUserList() []*model.User {
+func (b *broadcaster) GetUserList() []*models.User {
 	b.requestUsersChannel <- struct{}{}
 	return <-b.usersChannel
 }
