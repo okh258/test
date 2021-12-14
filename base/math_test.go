@@ -5,7 +5,7 @@ import (
 )
 
 func TestGetRate(t *testing.T) {
-	t.Logf("num: %v\n", GetRate(55, 100, true))
+	t.Logf("num: %v\n", GetRate(1, 0, true))
 }
 
 // GetRate 获取率

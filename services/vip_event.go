@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 var _vipEventService *VipEventService
 
-func NewUserCensusService() *VipEventService {
+func NewVipEventService() *VipEventService {
 	if _vipEventService == nil {
 		_vipEventService = &VipEventService{
 			o: db.NewOrmWithDB(context.Background(), db.AliasNameAdmin),

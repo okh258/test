@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"context"
@@ -35,12 +35,7 @@ func (s *AService) GetUserCensusCount(ctx context.Context, start, end *time.Time
 	sql := "SELECT * FROM t_user_count_census WHERE TO_DAYS(create_date) = TO_DAYS(CURDATE()) LIMIT 1"
 	r := o.Raw(sql)
 	if start != nil && end != nil {
-		sql = "SELECT %s%s%s%s FROM t_user_count_census WHERE TO_DAYS(create_date) >= TO_DAYS(?) AND TO_DAYS(create_date) <= TO_DAYS(?)"
-		c1 := "SUM(vcode_count) verify_count, SUM(register_count) register_count, SUM(register_male_count) register_male_count, SUM(register_female_count) register_female_count, "
-		c2 := "SUM(coach_count) coach_count, SUM(coach_male_count) coach_male_count, SUM(coach_female_count) coach_female_count, "
-		c3 := "SUM(consumer_count) consumer_count, SUM(consumer_male_count) consumer_male_count, SUM(consumer_female_count) consumer_female_count, SUM(ios_count) ios_count, SUM(android_count) android_count, "
-		c4 := "MAX(vcode_total) as verify_total, MAX(register_total) register_total, MAX(coach_total) coach_total, MAX(consumer_total) consumer_total, MAX(ios_total) ios_total, MAX(android_total) android_total, MAX(create_date) create_date, MAX(create_time) create_time, MAX(update_time) update_time "
-		sql = fmt.Sprintf(sql, c1, c2, c3, c4)
+		sql = "SELECT * FROM t_user_count_census WHERE TO_DAYS(create_date) >= TO_DAYS(?) AND TO_DAYS(create_date) <= TO_DAYS(?) ORDER BY update_time DESC LIMIT 1"
 		r = o.Raw(sql).SetArgs(start, end)
 	}
 	err := r.QueryRow(&result)
@@ -135,4 +130,34 @@ func (s *AService) GetDynamicCensusCount(ctx context.Context, start, end *time.T
 		return nil, err
 	}
 	return result, nil
+}
+
+// GetBusinessOrderCensus 根据时间查找订单业务统计
+func (s *AService) GetBusinessOrderCensus(ctx context.Context, start, end int64) (*models.BusinessOrderCensus, error) {
+	o := s.o
+	var result *models.BusinessOrderCensus
+	sql := "SELECT * FROM t_business_order_census WHERE create_time >= ? AND create_time <= ? ORDER BY create_time DESC LIMIT 1"
+	err := o.Raw(sql).SetArgs(start, end).QueryRow(&result)
+	if err != nil && err != orm.ErrNoRows {
+		logs.Errorf(ctx, "GetBusinessOrderCensus failed, err: %v", err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// UpsertBusinessOrderCensus 新增订单业务统计
+func (s *AService) UpsertBusinessOrderCensus(ctx context.Context, data *models.BusinessOrderCensus) (err error) {
+	if data == nil {
+		return nil
+	}
+	if data.Id == 0 {
+		_, err = s.o.Insert(data)
+	} else {
+		_, err = s.o.Update(data)
+	}
+	if err != nil {
+		logs.Errorf(ctx, "UpsertBusinessOrderCensus err:", err)
+		return err
+	}
+	return nil
 }

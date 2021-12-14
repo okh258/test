@@ -1,9 +1,7 @@
-package service
+package services
 
 import (
 	"context"
-	"fmt"
-	"git.devops.com/wsim/hflib/logs"
 	"test/models"
 	"test/util"
 	"testing"
@@ -92,39 +90,16 @@ func GetTipOffCount(t *testing.T, ctx context.Context, start, end int64) int64 {
 
 func TestGetUserCensus(t *testing.T) {
 	now := time.Now()
-	start := now.Add(-25 * time.Hour)
-	count1, err := GetUserCensus(context.Background(), &start, &now)
+	start := now.Add(-24 * time.Hour)
+	count1, err := NewAService().GetUserCensusCount(context.Background(), &start, &now)
 	if err != nil {
 		t.Fatalf("get failed, err: %v", err)
 	}
 	t.Logf("count1: %+v", count1)
 }
 
-// GetUserCensus 根据时间查找用户统计数量
-func GetUserCensus(ctx context.Context, start, end *time.Time) (*models.UserCountCensus, error) {
-	o := orm.NewOrm()
-	var result *models.UserCountCensus
-	sql := "SELECT * FROM t_user_count_census WHERE TO_DAYS(create_date) = TO_DAYS(CURDATE()) LIMIT 1"
-	r := o.Raw(sql)
-	if start != nil || end != nil {
-		sql = "SELECT %s%s%s%s FROM t_user_count_census WHERE TO_DAYS(create_date) >= TO_DAYS(?) AND TO_DAYS(create_date) <= TO_DAYS(?)"
-		c1 := "SUM(register_count) register_count, SUM(register_male_count) register_male_count, SUM(register_female_count) register_female_count, "
-		c2 := "SUM(coach_count) coach_count, SUM(coach_male_count) coach_male_count, SUM(coach_female_count) coach_female_count, "
-		c3 := "SUM(consumer_count) consumer_count, SUM(consumer_male_count) consumer_male_count, SUM(consumer_female_count) consumer_female_count, "
-		c4 := "MAX(register_total) register_total, MAX(coach_total) coach_total, MAX(consumer_total) consumer_total, MAX(create_date) create_date, MAX(create_time) create_time, MAX(update_time) update_time "
-		sql = fmt.Sprintf(sql, c1, c2, c3, c4)
-		r = o.Raw(sql).SetArgs(start, end)
-	}
-	err := r.QueryRow(&result)
-	if err != nil && err != orm.ErrNoRows {
-		logs.Errorf(ctx, "GetUserCensus: %v", err)
-		return nil, err
-	}
-	return result, nil
-}
-
 func TestGetUserCensusCount(t *testing.T) {
-	s, _ := time.Parse("2006-01-02 15:04:05", "2021-12-01 00:00:00")
+	s, _ := time.Parse("2006-01-02 15:04:05", "2021-12-05 00:00:00")
 	e, _ := time.Parse("2006-01-02 15:04:05", "2021-12-06 00:00:00")
 	r, err := NewAService().GetUserCensusCount(context.TODO(), &s, &e)
 	if err != nil {
@@ -137,7 +112,7 @@ func TestGetUserCensusCount(t *testing.T) {
 func TestUpsert(t *testing.T) {
 	now := time.Now()
 	d := &models.UserCountCensus{
-		CreateDate:          &now,
+		CreateDate:          now,
 		RegisterCount:       2,
 		RegisterMaleCount:   1,
 		RegisterFemaleCount: 1,

@@ -280,7 +280,7 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// AdminClient is the client API for Admin service.
+// AdminClient is the client API for Admin services.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type AdminClient interface {
@@ -304,7 +304,7 @@ func (c *adminClient) AddOperationLog(ctx context.Context, in *AddOperationLogRe
 	return out, nil
 }
 
-// AdminServer is the server API for Admin service.
+// AdminServer is the server API for Admin services.
 type AdminServer interface {
 	AddOperationLog(context.Context, *AddOperationLogRequest) (*AddOperationLogReply, error)
 }
