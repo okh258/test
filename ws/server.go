@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -52,7 +53,7 @@ func WebSocketHandleFunc(w http.ResponseWriter, req *http.Request) {
 	AcceptUser(conn, uid, req)
 }
 
-// 用户鉴权
+// UserAuth 用户鉴权
 func UserAuth(uid string) bool {
 	if len(uid) > 0 {
 		return true
@@ -60,7 +61,7 @@ func UserAuth(uid string) bool {
 	return false
 }
 
-// 接收用户
+// AcceptUser 接收用户
 func AcceptUser(conn *websocket.Conn, uid string, req *http.Request) {
 	// 1. 创建用户
 	user := model.NewUser(conn, uid, req.RemoteAddr, 10)
@@ -88,8 +89,12 @@ func UserHandle(user *model.User, conn *websocket.Conn, uid string) {
 	log.Printf("user offline, uid: %v\n", uid)
 
 	if err == nil {
-		closeErr := conn.Close(websocket.StatusNormalClosure, "err is empty")
+		closeErr := conn.Close(websocket.StatusNormalClosure, "")
 		if closeErr != nil {
+			errAlreadyWroteClose := errors.New("already wrote close")
+			if errors.As(closeErr, &errAlreadyWroteClose) {
+				return
+			}
 			log.Printf("conn close failed, err: %v\n", closeErr)
 		}
 	} else {
