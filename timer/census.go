@@ -22,18 +22,18 @@ func NewCensusService() *CensusService {
 func getCensus(ctx context.Context, now time.Time) func() error {
 	logs.Infof(ctx, "start census task, now: %v", now.Format("2006-04-02 15:04:05"))
 	//// 获取用户统计信息, 注册数量, 服务者数量, 非服务者数量
-	//NewCensusService().GetUserCensus(ctx, now)
+	NewCensusService().GetUserCensus(ctx, now)
 	// 订单数量, 发单数量, 一对一下单数量
 	//NewCensusService().GetOrderCensus(ctx, now)
 	// 业务数据统计
-	NewCensusService().GetBusinessCensus(ctx, now)
+	//NewCensusService().GetBusinessCensus(ctx, now)
 	return nil
 }
 
 // GetUserCensus 获取用户统计信息
 func (s *CensusService) GetUserCensus(ctx context.Context, now time.Time) {
 	// 获取当天的用户统计信息
-	oldUserCensus, err := services.NewUserCensusService().GetUserCensusCount(ctx, nil, nil)
+	oldUserCensus, err := services.NewUserCensusService().GetUserCensusCount(ctx, &now, nil)
 	if err != nil {
 		logs.Errorf(ctx, "GetUserCensus failed, date: %v, err: %v", now.Format(time.RFC3339), err)
 		return
@@ -151,7 +151,7 @@ func (s *CensusService) GetUserCensus(ctx context.Context, now time.Time) {
 // GetOrderCensus 获取订单统计数
 func (s *CensusService) GetOrderCensus(ctx context.Context, now time.Time) {
 	// 获取当天的统计信息
-	oldCensus, err := services.NewDynamicCensusService().GetDynamicCensusCount(ctx, nil, nil)
+	oldCensus, err := services.NewDynamicCensusService().GetDynamicCensusCount(ctx, &now, nil)
 	if err != nil {
 		logs.Errorf(ctx, "GetOrderCensus failed, date: %v, err: %v", now.Format(time.RFC3339), err)
 		return

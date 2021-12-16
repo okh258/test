@@ -28,13 +28,16 @@ type DynamicCensusService struct {
 	o orm.Ormer
 }
 
-// GetDynamicCensusCount 根据时间查找用户统计数量
+// GetDynamicCensusCount 根据时间查找订单统计数
 // start end 任意不传, 查询当天统计信息
 func (s *DynamicCensusService) GetDynamicCensusCount(ctx context.Context, start, end *time.Time) (*models.OrderCountCensus, error) {
+	if start == nil {
+		return nil, fmt.Errorf("start time can't be nil")
+	}
 	o := s.o
 	var result *models.OrderCountCensus
-	sql := "SELECT * FROM t_order_count_census WHERE TO_DAYS(create_date) = TO_DAYS(CURDATE()) LIMIT 1"
-	r := o.Raw(sql)
+	sql := "SELECT * FROM t_order_count_census WHERE TO_DAYS(create_date) = TO_DAYS(?) LIMIT 1"
+	r := o.Raw(sql, start)
 	if start != nil && end != nil {
 		sql = "SELECT %s%s%s FROM t_order_count_census WHERE TO_DAYS(create_date) >= TO_DAYS(?) AND TO_DAYS(create_date) <= TO_DAYS(?)"
 		c1 := "SUM(order_count) order_count, SUM(order_cancel_count) order_cancel_count, SUM(appoint_count) appoint_count, SUM(appoint_cancel_count) appoint_cancel_count, SUM(one_by_one_count) one_by_one_count, SUM(one_by_one_cancel_count) one_by_one_cancel_count, "

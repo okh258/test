@@ -64,10 +64,13 @@ func (s *UserCensusService) GetUserCountBy(params models.SearchUserRequestParams
 // GetUserCensusCount 根据时间查找用户统计数量
 // start end 任意不传, 查询当天统计信息
 func (s *UserCensusService) GetUserCensusCount(ctx context.Context, start, end *time.Time) (*models.UserCountCensus, error) {
+	if start == nil {
+		return nil, fmt.Errorf("start time can't be nil")
+	}
 	o := s.o
 	var result *models.UserCountCensus
-	sql := "SELECT * FROM t_user_count_census WHERE TO_DAYS(create_date) = TO_DAYS(CURDATE()) LIMIT 1"
-	r := o.Raw(sql)
+	sql := "SELECT * FROM t_user_count_census WHERE TO_DAYS(create_date) = TO_DAYS(?) LIMIT 1"
+	r := o.Raw(sql, start)
 	if start != nil && end != nil {
 		sql = "SELECT %s%s%s%s FROM t_user_count_census WHERE TO_DAYS(create_date) >= TO_DAYS(?) AND TO_DAYS(create_date) <= TO_DAYS(?)"
 		c1 := "SUM(verify_count) verify_count, SUM(register_count) register_count, SUM(register_male_count) register_male_count, SUM(register_female_count) register_female_count, "
@@ -75,7 +78,7 @@ func (s *UserCensusService) GetUserCensusCount(ctx context.Context, start, end *
 		c3 := "SUM(consumer_count) consumer_count, SUM(consumer_male_count) consumer_male_count, SUM(consumer_female_count) consumer_female_count, SUM(ios_count) ios_count, SUM(android_count) android_count, "
 		c4 := "MAX(verify_total) verify_total, MAX(register_total) register_total, MAX(coach_total) coach_total, MAX(consumer_total) consumer_total, MAX(ios_total) ios_total, MAX(android_total) android_total, MAX(create_date) create_date, MAX(create_time) create_time, MAX(update_time) update_time "
 		sql = fmt.Sprintf(sql, c1, c2, c3, c4)
-		r = o.Raw(sql).SetArgs(start, end)
+		r = o.Raw(sql, start, end)
 	}
 	err := r.QueryRow(&result)
 	if err != nil && err != orm.ErrNoRows {
