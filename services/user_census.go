@@ -42,6 +42,9 @@ func (s *UserCensusService) GetUserCountBy(params models.SearchUserRequestParams
 			query.Must(elastic.NewTermQuery("user_identity", 1))
 		}
 	}
+	if params.OsType != 0 {
+		query.Must(elastic.NewTermQuery("os_type", params.OsType))
+	}
 	if params.EndTime != 0 && params.StartTime == 0 {
 		query.Must(elastic.NewRangeQuery("register_time").Lte(params.EndTime))
 	} else if params.EndTime != 0 && params.StartTime != 0 {

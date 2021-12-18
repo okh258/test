@@ -1,11 +1,13 @@
 package base
 
 import (
+	"math"
 	"testing"
 )
 
 func TestGetRate(t *testing.T) {
-	t.Logf("num: %v\n", GetRate(1, 0, true))
+	t.Logf("num: %v\n", GetRate(10, 100, true))
+	t.Logf("pageSize: %v\n", GetPageSize(101, 10))
 }
 
 // GetRate 获取率
@@ -16,4 +18,9 @@ func GetRate(molecule, denominator int64, reverse bool) float64 {
 		rate = 1 - rate
 	}
 	return rate
+}
+
+// GetPageSize 获取总页数
+func GetPageSize(total, num int64) float64 {
+	return math.Ceil(float64(total) / float64(num))
 }

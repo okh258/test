@@ -54,6 +54,14 @@ func (s *CensusService) GetUserCensus(ctx context.Context, now time.Time) {
 		userCensus.VerifyCount = services.NewDService().GetInviteeUserCount(p.StartTime*1000, p.EndTime*1000)
 		// 注册数量
 		userCensus.RegisterCount = services.NewUserCensusService().GetUserCountBy(p)
+		// IOS 注册数量
+		p.OsType = 3
+		userCensus.IosCount = services.NewUserCensusService().GetUserCountBy(p)
+		// Android 注册数量
+		p.OsType = 4
+		userCensus.AndroidCount = services.NewUserCensusService().GetUserCountBy(p)
+		p.OsType = 0
+		// 男性注册数量
 		p.Gender = 1
 		userCensus.RegisterMaleCount = services.NewUserCensusService().GetUserCountBy(p)
 		p.Gender = 2
@@ -81,6 +89,13 @@ func (s *CensusService) GetUserCensus(ctx context.Context, now time.Time) {
 		userCensus.VerifyTotal = services.NewDService().GetInviteeUserCount(0, p.EndTime*1000)
 		// 注册总数量
 		userCensus.RegisterTotal = services.NewUserCensusService().GetUserCountBy(pTotal)
+		// IOS 注册数量
+		pTotal.OsType = 3
+		userCensus.IosTotal = services.NewUserCensusService().GetUserCountBy(pTotal)
+		// Android 注册数量
+		pTotal.OsType = 4
+		userCensus.AndroidTotal = services.NewUserCensusService().GetUserCountBy(pTotal)
+		pTotal.OsType = 0
 		// 服务者总数量
 		pTotal.IsCoach = 1
 		userCensus.CoachTotal = services.NewUserCensusService().GetUserCountBy(pTotal)
@@ -105,6 +120,14 @@ func (s *CensusService) GetUserCensus(ctx context.Context, now time.Time) {
 	userCensus.VerifyCount += services.NewDService().GetInviteeUserCount(p.StartTime*1000, p.EndTime*1000)
 	// 注册数量
 	userCensus.RegisterCount += services.NewUserCensusService().GetUserCountBy(p)
+	// IOS 注册数量
+	p.OsType = 3
+	userCensus.IosCount = services.NewUserCensusService().GetUserCountBy(p)
+	// Android 注册数量
+	p.OsType = 4
+	userCensus.AndroidCount = services.NewUserCensusService().GetUserCountBy(p)
+	p.OsType = 0
+	// 男性注册数量
 	p.Gender = 1
 	userCensus.RegisterMaleCount += services.NewUserCensusService().GetUserCountBy(p)
 	p.Gender = 2
@@ -132,6 +155,13 @@ func (s *CensusService) GetUserCensus(ctx context.Context, now time.Time) {
 	userCensus.VerifyTotal = services.NewDService().GetInviteeUserCount(0, pTotal.EndTime*1000)
 	// 注册总数量
 	userCensus.RegisterTotal = services.NewUserCensusService().GetUserCountBy(pTotal)
+	// IOS 注册数量
+	pTotal.OsType = 3
+	userCensus.IosTotal = services.NewUserCensusService().GetUserCountBy(pTotal)
+	// Android 注册数量
+	pTotal.OsType = 4
+	userCensus.AndroidTotal = services.NewUserCensusService().GetUserCountBy(pTotal)
+	pTotal.OsType = 0
 	// 服务者总数量
 	pTotal.IsCoach = 1
 	userCensus.CoachTotal = services.NewUserCensusService().GetUserCountBy(pTotal)

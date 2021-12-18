@@ -17,6 +17,7 @@ type SearchUserRequestParams struct {
 	IsCoach int64 `json:"is_coach"`
 	// 用户状态 -1封禁 1正常
 	UserStatus int64 `json:"user_status"`
+	OsType     int64 `json:"os_type"`
 	// 条数
 	Num int64 `json:"num"`
 	// 分页page
