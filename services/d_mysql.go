@@ -16,7 +16,7 @@ func NewDService() *DService {
 		_dService = &DService{
 			o: db.NewOrmWithDB(context.Background(), db.AliasNameDating),
 		}
-		orm.RegisterModel(&model.CapitalInflowCensus{}, &model.CapitalOutflowCensus{}, &models.BusinessOrderCensus{})
+		orm.RegisterModel(&models.CallVideoOrder{}, &model.CapitalInflowCensus{}, &model.CapitalOutflowCensus{}, &models.BusinessOrderCensus{})
 	}
 	return _dService
 }
@@ -102,4 +102,39 @@ func (s *DService) GetAmountByType(ctx context.Context, tradeType, profitType, s
 		return 0
 	}
 	return total
+}
+
+func (s *DService) GetAllCalls(ctx context.Context, params models.CallVideoOrderReq) ([]*models.CallVideoOrder, error) {
+	var resultList []*models.CallVideoOrder
+	query := s.o.QueryTable("t_call_video_order")
+	if len(params.UserIdList) > 0 {
+		query = query.Filter("uid__in", params.UserIdList)
+	}
+	if len(params.CoachUidList) > 0 {
+		query = query.Filter("coach_uid__in", params.CoachUidList)
+	}
+	if params.Status == 5 {
+		query = query.Filter("status", params.Status)
+	} else if params.Status == -1 {
+		query = query.Filter("status__gte", 5)
+	}
+	if params.OrderId > 0 {
+		query = query.Filter("order_id", params.OrderId)
+	}
+	if params.StartTime > 0 {
+		query = query.Filter("create_time__gte", params.StartTime)
+	}
+	if params.EndTime > 0 {
+		query = query.Filter("create_time__lte", params.EndTime)
+	}
+	query = query.OrderBy("-create_time")
+
+	query = query.Offset((params.PageNum - 1) * params.PageSize).Limit(params.PageSize)
+
+	_, err := query.All(&resultList)
+	if err != nil {
+		logs.Error(ctx, "CallVideoOrderService:GetAllCalls err:", err)
+		return nil, err
+	}
+	return resultList, nil
 }
