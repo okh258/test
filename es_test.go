@@ -3,7 +3,10 @@ package test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"git.devops.com/wsim/hflib/logs"
 	"github.com/olivere/elastic/v7"
+	"test/elasticsearch"
 	"test/models"
 	"test/util"
 	"testing"
@@ -215,4 +218,22 @@ func GetUserCount(params models.SearchUserRequestParams) int64 {
 	}
 
 	return resp.TotalHits()
+}
+
+func TestSetSkillAppearanceLevel(t *testing.T) {
+	SetSkillAppearanceLevel(context.TODO(), 528041712999424, 2)
+}
+
+// SetSkillAppearanceLevel 设置服务者列表颜值信息
+func SetSkillAppearanceLevel(ctx context.Context, uid, appearanceLevel int64) error {
+	indexName := elasticsearch.GetIndexName("user_skill")
+	_, err := elasticsearch.ES().UpdateByQuery().Query(elastic.NewTermQuery("uid", uid)).
+		Index(indexName).
+		Script(elastic.NewScript(fmt.Sprintf("ctx._source['appearance_level']=%v", appearanceLevel))).
+		Do(context.TODO())
+	if err != nil && !elastic.IsNotFound(err) {
+		logs.Errorf(ctx, "update es coach info failed, err: %v", err)
+		return err
+	}
+	return nil
 }
