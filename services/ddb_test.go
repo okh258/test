@@ -25,3 +25,18 @@ func TestGetUserDriverInfo(t *testing.T) {
 	}
 	t.Logf("info: %+v\n", info2)
 }
+
+func TestGetDetailUsers(t *testing.T) {
+	uids := []int64{500944337634304, 530671533814784}
+	ids := make([]interface{}, len(uids))
+	for index, value := range uids {
+		ids[index] = value
+	}
+
+	count, err := GetDetailUsers(context.TODO(), ids)
+	if err != nil {
+		t.Logf("TestGetDetailUsers failed, err: %v", err)
+		return
+	}
+	t.Logf("count: %v", count)
+}

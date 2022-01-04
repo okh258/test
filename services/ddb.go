@@ -9,6 +9,7 @@ import (
 	"git.devops.com/wsim/hflib/logs"
 	"os"
 	"test/model"
+	"test/models"
 )
 
 func init() {
@@ -64,4 +65,26 @@ func GetUserDriverItem(ctx context.Context, uid int64) (*model.UserDevice, error
 		return nil, err
 	}
 	return &result, nil
+}
+
+func GetDetailUsers(ctx context.Context, uids []interface{}) (map[int64]*models.UserBaseInfo, error) {
+	var userInfos []*models.UserBaseInfo
+
+	opt := &odm.BatchGet{TableName: "user_user"}
+	for _, uid := range uids {
+		opt.Keys = append(opt.Keys, odm.Key{
+			HashKey:  uid,
+			RangeKey: nil,
+		})
+	}
+	err := dao.DB().Table(models.UserBaseInfo{}).GetDB().BatchGetItem(ctx, []*odm.BatchGet{opt}, nil, &userInfos)
+	if err != nil {
+		logs.Errorf(ctx, "DDB GetDetailUsers err: %v", err)
+		return nil, err
+	}
+	userInfoMap := make(map[int64]*models.UserBaseInfo)
+	for _, info := range userInfos {
+		userInfoMap[info.UserId] = info
+	}
+	return userInfoMap, nil
 }
