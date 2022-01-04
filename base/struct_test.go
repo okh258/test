@@ -1,9 +1,44 @@
 package base
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 )
+
+func TestJson(t *testing.T) {
+	type A struct {
+		Name string `json:"name"`
+		Age  int64  `json:"age"`
+	}
+	type B struct {
+		A
+		Sex int64 `json:"sex"`
+	}
+	type C struct {
+		Name string `json:"name"`
+		Age  int64  `json:"age"`
+		Sex  int64  `json:"sex"`
+	}
+	a := A{
+		Name: "xiaoMing",
+		Age:  18,
+	}
+
+	b := B{a, 1}
+	buf, err := json.Marshal(b)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	t.Logf("b: %s", buf)
+
+	c := C{"xiaoMing", 18, 1}
+	buf1, err := json.Marshal(c)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	t.Logf("c: %s", buf1)
+}
 
 // 比较结构体的值是否相等
 func TestEqual(t *testing.T) {
