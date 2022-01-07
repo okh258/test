@@ -27,3 +27,25 @@ func TestGetAllCalls(t *testing.T) {
 	}
 	t.Logf("len: %v, list: %+v", len(list), list)
 }
+
+func TestGetSignatureCount(t *testing.T) {
+	list, err := NewDService().GetSignatureCount(ctx, 11, 1, 356503167878144)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	t.Logf("len: %v", list)
+	list -= 1
+	if list > 2 {
+		t.Logf("true")
+		return
+	}
+	t.Logf("false")
+}
+
+func TestGetCategoryListByIds(t *testing.T) {
+	list, err := NewDService().GetCategoryListByIds(ctx, []int64{34, 11})
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	t.Logf("len: %v, list: %+v", len(list), list)
+}

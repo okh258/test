@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+func TestParse(t *testing.T) {
+	a := util.Timestamp()
+	d := time.Unix(a/1000, 0)
+	t.Logf("d: %v", d.Format("2006-01-02 15:04:05"))
+	t.Logf("d: %v", d.Format("2006年01月02日15时04分05秒"))
+}
+
 func TestGetZero(t *testing.T) {
 	d := time.Now()
 	newTime := time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())

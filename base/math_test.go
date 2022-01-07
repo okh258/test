@@ -24,3 +24,8 @@ func GetRate(molecule, denominator int64, reverse bool) float64 {
 func GetPageSize(total, num int64) float64 {
 	return math.Ceil(float64(total) / float64(num))
 }
+
+func TestMaxInt(t *testing.T) {
+	t.Logf("int64 max: %v", math.MaxInt64)
+	t.Logf("int32 max: %v", math.MaxInt32)
+}

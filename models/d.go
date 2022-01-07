@@ -86,3 +86,63 @@ type CallVideoOrder struct {
 func (m *CallVideoOrder) TableName() string {
 	return "t_call_video_order"
 }
+
+func (m *CategoryCoachSignature) TableName() string {
+	return "t_category_coach_signature"
+}
+
+//用户订单个性标签
+type CategoryCoachSignature struct {
+	//编号
+	Id int64 `orm:"auto" json:"id"`
+	//个性标签名称
+	SignatureName string `json:"signature_name"`
+	//分类编号
+	CategoryId int64 `json:"category_id"`
+	//用户uid
+	CoachUid int64 `json:"coach_uid"`
+	//创建时间
+	CreateTime int64 `json:"create_time"`
+	//状态 1：审核中 2：通过 3：未通过
+	Status int64 `json:"status"`
+	//是否被选中 1：选中 0：未选中
+	IsSelected int64 `json:"is_selected"`
+	//来源编号 1：系统推荐标签 2：自选
+	SourceId int64 `json:"source_id"`
+	//是否显示 0：不显示 1：显示
+	IsShow int64 `json:"is_show"`
+}
+
+// 发约品类
+type SkillCategory struct {
+	// 品类id
+	CategoryId int64 `orm:"auto" json:"category_id"`
+	// 品类名
+	CategoryName string `json:"category_name"`
+	// 品类描述
+	CategoryDesc string `json:"category_desc"`
+	// 品类类型 1线上服务 2休闲娱乐 3运动陪练 4教育培训 5时尚达人 6独家专属
+	CategoryType int64 `json:"category_type"`
+	// 搜索关键词
+	SearchKeyword string `json:"search_keyword"`
+	// 是否是线上 1 线上 0线下
+	IsOnline int64 `json:"is_online"`
+	// 是否饮酒
+	IsDrink int64 `json:"is_drink"`
+	// 最小时长(秒)
+	MinDuration int64 `json:"min_duration"`
+	// 最大时长
+	MaxDuration int64 `json:"max_duration"`
+	// 价格范围
+	PriceRange string `json:"price_range"`
+	// 排序
+	SortNum int64 `json:"sort_num"`
+	// 背景颜色
+	BackgroundColor string `json:"background_color"`
+	// 状态 0正常 -1禁用
+	Status int64 `json:"status"`
+}
+
+func (m *SkillCategory) TableName() string {
+	return "t_category"
+}

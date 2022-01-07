@@ -16,7 +16,7 @@ func NewDService() *DService {
 		_dService = &DService{
 			o: db.NewOrmWithDB(context.Background(), db.AliasNameDating),
 		}
-		orm.RegisterModel(&models.CallVideoOrder{}, &model.CapitalInflowCensus{}, &model.CapitalOutflowCensus{}, &models.BusinessOrderCensus{})
+		orm.RegisterModel(&models.CallVideoOrder{}, &model.CapitalInflowCensus{}, &model.CapitalOutflowCensus{}, &models.BusinessOrderCensus{}, &models.CategoryCoachSignature{}, &models.SkillCategory{})
 	}
 	return _dService
 }
@@ -137,4 +137,46 @@ func (s *DService) GetAllCalls(ctx context.Context, params models.CallVideoOrder
 		return nil, err
 	}
 	return resultList, nil
+}
+
+// GetSignatureCount 获取服务者设置的标签数量
+func (s *DService) GetSignatureCount(ctx context.Context, categoryID, isSelected, coachUid int64) (int64, error) {
+	q := orm.NewOrm().QueryTable("t_category_coach_signature").Filter("coach_uid", coachUid)
+	if isSelected != -1 {
+		// 是否选中: 1：选中 0：未选中
+		q = q.Filter("is_selected", isSelected)
+	}
+	if categoryID != 0 {
+		q = q.Filter("category_id", categoryID)
+	}
+
+	count, err := q.Count()
+	if err != nil {
+		logs.Error(ctx, "CategoryCoachSignatureService：GetSignatureCount err:", err)
+		return count, err
+	}
+	return count, nil
+}
+
+func (s *DService) GetCategoryListByIds(ctx context.Context, categoryIds []int64) (map[int64]*models.SkillCategory, error) {
+	if len(categoryIds) == 0 {
+		return nil, nil
+	}
+
+	var result []*models.SkillCategory
+	query := s.o.QueryTable("t_category")
+	if len(categoryIds) > 0 {
+		query = query.Filter("category_id__in", categoryIds)
+	}
+	_, err := query.OrderBy("-sort_num").All(&result)
+	if err != nil {
+		logs.Error(ctx, "GetCategoryListByIds failed, err:", err)
+		return nil, err
+	}
+
+	var data = make(map[int64]*models.SkillCategory)
+	for _, val := range result {
+		data[val.CategoryId] = val
+	}
+	return data, nil
 }
