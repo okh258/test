@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"git.devops.com/wsim/hflib/logs"
 	"github.com/olivere/elastic/v7"
+	"reflect"
 	"test/elasticsearch"
 	"test/models"
 	"test/util"
@@ -181,7 +182,7 @@ func TestGetUserCount(t *testing.T) {
 		StartTime: 0,
 		EndTime:   util.Timestamp(),
 	})
-	t.Logf("total: %v", total)
+	fmt.Printf("total: %v\n", total)
 }
 
 func GetUserCount(params models.SearchUserRequestParams) int64 {
@@ -236,4 +237,124 @@ func SetSkillAppearanceLevel(ctx context.Context, uid, appearanceLevel int64) er
 		return err
 	}
 	return nil
+}
+
+func TestSearchUser(t *testing.T) {
+	params := models.SearchUserRequestParams{
+		Uid:        0,
+		UserNumber: 0,
+		Gender:     0,
+		Mobile:     0,
+		Nickname:   "",
+		IsVip:      0,
+		IsCoach:    0,
+		UserStatus: 1,
+		OsType:     0,
+		Num:        10,
+		Page:       0,
+		StartTime:  0,
+		EndTime:    0,
+	}
+
+	infos, _ := SearchUser(params)
+	t.Logf("info.len: %v", len(infos))
+}
+
+func SearchUser(params models.SearchUserRequestParams) ([]map[string]interface{}, error) {
+	esClient := elasticsearch.ES()
+	indexName := elasticsearch.GetIndexName("user")
+	query := elastic.NewBoolQuery()
+	if params.Uid > 0 {
+		query.Must(elastic.NewTermQuery("uid", params.Uid))
+	}
+
+	if params.Gender > 0 {
+		query.Must(elastic.NewTermQuery("gender", params.Gender))
+	}
+
+	if params.Mobile > 0 {
+		query.Must(elastic.NewTermQuery("mobile", params.Mobile))
+	}
+
+	if params.Nickname != "" {
+		query.Must(elastic.NewMatchQuery("nickname", params.Nickname))
+	}
+
+	if params.UserNumber > 0 {
+		query.Must(elastic.NewTermQuery("usernumber", params.UserNumber))
+	}
+	if params.EndTime != 0 && params.StartTime == 0 {
+		query.Must(elastic.NewRangeQuery("register_time").Lte(params.EndTime))
+	} else if params.EndTime != 0 && params.StartTime != 0 {
+		query.Must(elastic.NewRangeQuery("register_time").Gte(params.StartTime).Lte(params.EndTime))
+	}
+	//用vip过期时间去判断最准确
+	if params.IsVip != 0 {
+		nowTime := util.Timestamp()
+		rangeQuery := elastic.NewRangeQuery("vip_expire_time")
+		if params.IsVip == -1 {
+			rangeQuery.Lt(nowTime)
+		} else {
+			rangeQuery.Gte(nowTime)
+		}
+		query.Must(rangeQuery)
+	}
+	if params.IsCoach != 0 {
+		if params.IsCoach == -1 {
+			query.Must(elastic.NewTermQuery("user_identity", 0))
+		} else {
+			query.Must(elastic.NewTermQuery("user_identity", 1))
+		}
+	}
+	if params.UserStatus != 0 {
+		nowTime := util.Timestamp()
+		rangeQuery := elastic.NewRangeQuery("disabled_expire_time")
+		if params.UserStatus == -1 {
+			// 状态: 封禁
+			rangeQuery.Gte(nowTime)
+		} else {
+			rangeQuery.Lt(nowTime)
+		}
+		query.Must(rangeQuery)
+	}
+
+	page := params.Page
+	if params.Page <= 0 {
+		page = 1
+	}
+	num := params.Num
+	if num <= 0 {
+		num = 20
+	}
+
+	q, err := query.Source()
+	if err == nil {
+		str, _ := json.Marshal(q)
+		fmt.Printf("query: %s\n", str)
+	}
+
+	offset := (page - 1) * num
+	resp, err := esClient.Search().Index(indexName).Query(query).
+		Sort("register_time", false).
+		From(int(offset)).
+		Size(int(num)).
+		Pretty(true).
+		Do(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+
+	var uids []int64
+	var userInfos []map[string]interface{}
+	if resp != nil && resp.TotalHits() > 0 {
+		var searchItem map[string]interface{}
+		for _, item := range resp.Each(reflect.TypeOf(searchItem)) {
+			if info, ok := item.(map[string]interface{}); ok {
+				userInfos = append(userInfos, info)
+				uids = append(uids, util.ToInt64(info["uid"], 0))
+			}
+		}
+	}
+
+	return userInfos, nil
 }
