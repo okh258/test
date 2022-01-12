@@ -16,7 +16,9 @@ func NewDService() *DService {
 		_dService = &DService{
 			o: db.NewOrmWithDB(context.Background(), db.AliasNameDating),
 		}
-		orm.RegisterModel(&models.CallVideoOrder{}, &model.CapitalInflowCensus{}, &model.CapitalOutflowCensus{}, &models.BusinessOrderCensus{}, &models.CategoryCoachSignature{}, &models.SkillCategory{})
+		orm.RegisterModel(&models.CallVideoOrder{}, &model.CapitalInflowCensus{}, &model.CapitalOutflowCensus{},
+			&models.BusinessOrderCensus{}, &models.CategoryCoachSignature{}, &models.SkillCategory{},
+			&models.RechargeGoldLog{})
 	}
 	return _dService
 }
@@ -179,4 +181,41 @@ func (s *DService) GetCategoryListByIds(ctx context.Context, categoryIds []int64
 		data[val.CategoryId] = val
 	}
 	return data, nil
+}
+
+func (s *DService) PageRechargeGoldLog(ctx context.Context, params *models.RechargeInviteReq) ([]*models.RechargeGoldLog, int64, error) {
+	// 初始化页码, 页大小
+	if params.PageNum == 0 {
+		params.PageNum = 1
+	}
+	if params.PageSize == 0 {
+		params.PageSize = 1
+	}
+	q := orm.NewOrm().QueryTable("t_recharge_gold_log")
+	if params.Status > 0 {
+		q = q.Filter("status", params.Status)
+	}
+	if params.InviteeUid > 0 {
+		q = q.Filter("uid", params.InviteeUid)
+	}
+	if params.InviterUid > 0 {
+		q = q.Filter("inviter_uid", params.InviterUid)
+	}
+
+	var result []*models.RechargeGoldLog
+	_, err := q.Limit(params.PageSize, (params.PageNum-1)*params.PageSize).
+		OrderBy("-create_time").
+		All(&result)
+	if err != nil {
+		logs.Errorf(ctx, "PageRechargeGoldLog failed, err: %v", err)
+		return nil, 0, err
+	}
+
+	totalNum, err := q.Count()
+	if err != nil {
+		logs.Errorf(ctx, "PageRechargeGoldLog total failed, err: %v", err)
+		return nil, 0, err
+	}
+
+	return result, totalNum, nil
 }

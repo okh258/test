@@ -146,3 +146,26 @@ type SkillCategory struct {
 func (m *SkillCategory) TableName() string {
 	return "t_category"
 }
+
+// RechargeInviteReq 邀请收益
+type RechargeInviteReq struct {
+	Uid        int64 `json:"uid"`         // 受邀人uid
+	InviterUid int64 `json:"inviter_uid"` // 邀请人uid
+	Status     int64 `json:"status"`      // 状态: 0未打款 1已打款
+	PageNum    int64 `json:"page_num"`    // 页码
+	PageSize   int64 `json:"page_size"`   // 页大小
+}
+
+type RechargeGoldLog struct { // 充值时币记录表
+	Id         int64 `json:"id" orm:"auto"`
+	OrderId    int64 `json:"order_id"`
+	Status     int64 `json:"status"` // 状态: 0未打款  1已打款
+	Amount     int64 `json:"amount"`
+	Uid        int64 `json:"uid"`
+	InviterUid int64 `json:"inviter_uid"` // 邀请人uid
+	CreateTime int64 `json:"create_time"`
+}
+
+func (m *RechargeGoldLog) TableName() string {
+	return "t_recharge_gold_log"
+}

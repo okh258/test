@@ -49,3 +49,19 @@ func TestGetCategoryListByIds(t *testing.T) {
 	}
 	t.Logf("len: %v, list: %+v", len(list), list)
 }
+
+func TestPageRechargeGoldLog(t *testing.T) {
+	p := &models.RechargeInviteReq{
+		InviteeUid: 0,
+		InviterUid: 0,
+		Status:     0,
+		PageNum:    0,
+		PageSize:   0,
+	}
+
+	list, total, err := NewDService().PageRechargeGoldLog(ctx, p)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	t.Logf("len: %v, list: %+v", total, list)
+}
